@@ -20,6 +20,7 @@
 
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 
 # ==========================================
 # Section 2: Import Data
@@ -267,38 +268,63 @@ ggsave(
 # Section 8: Distribution of Enterococcus Levels
 # ==========================================
 
-# Create histogram of Enterococcus concentrations
-ggplot(clean_data, aes(x = Result_Measure)) +
-  
+# Main distribution: concentrations from 0 to 200
+p_main <- ggplot(
+  subset(clean_data, Result_Measure <= 200),
+  aes(x = Result_Measure)
+) +
   geom_histogram(
-    bins = 50,
+    binwidth = 5,
     fill = "steelblue",
     color = "white"
   ) +
-  
   geom_vline(
     xintercept = 104,
-    color = "red",
     linetype = "dashed",
-    linewidth = 1
+    color = "red"
   ) +
-  
-  labs(
-    title = "Distribution of Enterococcus Concentrations",
-    x = "Enterococcus (CFU/100 mL)",
-    y = "Number of Samples"
-  ) +
-  
   coord_cartesian(xlim = c(0, 200)) +
-  
-  theme_classic()
-  
-  ggsave(
-    "Figures/enterococcus_distribution.png",
-    width = 8,
-    height = 5,
-   dpi = 300
+  labs(
+    title = "Main Distribution (0–200 CFU/100 mL)",
+    x = "Enterococcus concentration (CFU/100 mL)",
+    y = "Number of samples"
+  ) +
+  theme_minimal()
+
+# High-concentration tail: values above 200
+p_tail <- ggplot(
+  subset(clean_data, Result_Measure > 200),
+  aes(x = Result_Measure)
+) +
+  geom_histogram(
+    binwidth = 25,
+    fill = "steelblue",
+    color = "white"
+  ) +
+  coord_cartesian(xlim = c(200, 600)) +
+  labs(
+    title = "High-Concentration Tail (>200)",
+    x = "Enterococcus concentration (CFU/100 mL)",
+    y = "Number of samples"
+  ) +
+  theme_minimal()
+
+# Combine the two panels
+figure1 <- p_main / p_tail +
+  plot_annotation(
+    title = "Distribution of Enterococcus Concentrations"
   )
+
+print(figure1)
+
+# Save the figure
+ggsave(
+  "Figures/enterococcus_distribution.png",
+  plot = figure1,
+  width = 10,
+  height = 8,
+  dpi = 300
+)
   
   # ==========================================
   # Section 9: Water Quality Over Time
@@ -340,35 +366,52 @@ ggplot(clean_data, aes(x = Result_Measure)) +
     dpi = 300
   )
   
-  # ==========================================
-  # Section 10: Statistical Analysis
-  # ==========================================
+# ==========================================
+# Section 10: Statistical Analysis
+# ==========================================
   
-  # Convert variables to factors
-  clean_data$Year <- as.factor(clean_data$Year)
-  clean_data$Beach_Name <- as.factor(clean_data$Beach_Name)
+# Convert beach names to factors
+clean_data$Beach_Name <- as.factor(clean_data$Beach_Name)
   
-  # Logistic regression by year
-  model_year <- glm(
-    unsafe ~ Year,
+# ------------------------------------------
+# 10.1 Logistic Regression by Year
+# Test for an overall linear trend over time
+# ------------------------------------------
+  
+clean_data$Year_num <- as.numeric(as.character(clean_data$Year))
+  
+model_year_trend <- glm(
+    unsafe ~ Year_num,
     family = binomial,
     data = clean_data
   )
   
-  summary(model_year)
+# Display model summary
+summary(model_year_trend)
   
-  # Create season categories
-  clean_data <- clean_data %>%
-    mutate(
-      Season = case_when(
-        Month %in% c("May", "Jun") ~ "Early Summer",
-        Month %in% c("Jul", "Aug") ~ "Peak Summer",
-        Month %in% c("Sep") ~ "Late Summer",
-        TRUE ~ "Other"
+# Calculate odds ratio and 95% confidence interval
+year_results <- exp(cbind(
+    OR = coef(model_year_trend),
+    confint(model_year_trend)
+  ))
+  
+print(year_results)
+  
+# ------------------------------------------
+# 10.2 Create Seasonal Categories
+# ------------------------------------------
+  
+clean_data <- clean_data %>%
+   mutate(
+    Season = case_when(
+      Month %in% c("May", "Jun") ~ "Early Summer",
+      Month %in% c("Jul", "Aug") ~ "Peak Summer",
+      Month == "Sep" ~ "Late Summer",
+      TRUE ~ "Other"
       )
     )
   
-  clean_data$Season <- factor(
+clean_data$Season <- factor(
     clean_data$Season,
     levels = c(
       "Early Summer",
@@ -378,40 +421,47 @@ ggplot(clean_data, aes(x = Result_Measure)) +
     )
   )
   
-  # Logistic regression by season
-  model_season <- glm(
+# ------------------------------------------
+# 10.3 Logistic Regression by Season
+# ------------------------------------------
+  
+model_season <- glm(
     unsafe ~ Season,
     family = binomial,
     data = clean_data
   )
   
-  summary(model_season)
-
-  # Calculate odds ratios and 95% confidence intervals
+# Display model summary
+summary(model_season)
+  
+# Calculate odds ratios and 95% confidence intervals
 season_results <- exp(cbind(
-  OR = coef(model_season),
-  confint(model_season)
-))
-
+    OR = coef(model_season),
+    confint(model_season)
+  ))
+  
 print(season_results)
+  
+# ------------------------------------------
+# 10.4 Logistic Regression by Beach
+# ------------------------------------------
 
-  # Logistic regression by beach
-  model_beach <- glm(
+model_beach <- glm(
     unsafe ~ Beach_Name,
     family = binomial,
     data = clean_data
   )
   
-  summary(model_beach)
+# Display model summary
+summary(model_beach)
   
-  # Calculate odds ratios
-  exp(coef(model_year))
-  exp(coef(model_season))
-  exp(coef(model_beach))
+# Calculate odds ratios
+exp(coef(model_beach))
   
 # ==========================================
 # End of Analysis
 # ==========================================
+#
 #
 # This script completes the full analysis of recreational
 # water quality at New Jersey beaches using Enterococcus
