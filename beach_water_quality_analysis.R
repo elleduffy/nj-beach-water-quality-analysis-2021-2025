@@ -3,7 +3,7 @@
 # New Jersey Beaches (2021–2025)
 #
 # Author: Elle Duffy
-# Date: Summer 2026
+# Date: May 2026-August 2026
 # Version: 1.1
 #
 # Purpose:
@@ -20,15 +20,14 @@
 
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 
 # ==========================================
 # Section 2: Import Data
 # ==========================================
 
 # Read NJDEP beach water quality dataset
-beach_data <- read.csv("Data/nj_beach_water_quality_2021_2026.csv")
-
-setwd("/Users/elleduffy/Desktop/nj-beach-water-quality-analysis-2021-2026-2")
+beach_data <- read.csv("Data/nj_beach_water_quality_2021_2025.csv")
 
 # Verify successful data import
 head(beach_data)
@@ -269,38 +268,63 @@ ggsave(
 # Section 8: Distribution of Enterococcus Levels
 # ==========================================
 
-# Create histogram of Enterococcus concentrations
-ggplot(clean_data, aes(x = Result_Measure)) +
-  
+# Main distribution: concentrations from 0 to 200
+p_main <- ggplot(
+  subset(clean_data, Result_Measure <= 200),
+  aes(x = Result_Measure)
+) +
   geom_histogram(
-    bins = 50,
+    binwidth = 5,
     fill = "steelblue",
     color = "white"
   ) +
-  
   geom_vline(
     xintercept = 104,
-    color = "red",
     linetype = "dashed",
-    linewidth = 1
+    color = "red"
   ) +
-  
-  labs(
-    title = "Distribution of Enterococcus Concentrations",
-    x = "Enterococcus (CFU/100 mL)",
-    y = "Number of Samples"
-  ) +
-  
   coord_cartesian(xlim = c(0, 200)) +
-  
-  theme_classic()
-  
-  ggsave(
-    "Figures/enterococcus_distribution.png",
-    width = 8,
-    height = 5,
-   dpi = 300
+  labs(
+    title = "Main Distribution (0–200 CFU/100 mL)",
+    x = "Enterococcus concentration (CFU/100 mL)",
+    y = "Number of samples"
+  ) +
+  theme_minimal()
+
+# High-concentration tail: values above 200
+p_tail <- ggplot(
+  subset(clean_data, Result_Measure > 200),
+  aes(x = Result_Measure)
+) +
+  geom_histogram(
+    binwidth = 25,
+    fill = "steelblue",
+    color = "white"
+  ) +
+  coord_cartesian(xlim = c(200, 600)) +
+  labs(
+    title = "High-Concentration Tail (>200)",
+    x = "Enterococcus concentration (CFU/100 mL)",
+    y = "Number of samples"
+  ) +
+  theme_minimal()
+
+# Combine the two panels
+figure1 <- p_main / p_tail +
+  plot_annotation(
+    title = "Distribution of Enterococcus Concentrations"
   )
+
+print(figure1)
+
+# Save the figure
+ggsave(
+  "Figures/enterococcus_distribution.png",
+  plot = figure1,
+  width = 10,
+  height = 8,
+  dpi = 300
+)
   
   # ==========================================
   # Section 9: Water Quality Over Time
@@ -342,35 +366,52 @@ ggplot(clean_data, aes(x = Result_Measure)) +
     dpi = 300
   )
   
-  # ==========================================
-  # Section 10: Statistical Analysis
-  # ==========================================
+# ==========================================
+# Section 10: Statistical Analysis
+# ==========================================
   
-  # Convert variables to factors
-  clean_data$Year <- as.factor(clean_data$Year)
-  clean_data$Beach_Name <- as.factor(clean_data$Beach_Name)
+# Convert beach names to factors
+clean_data$Beach_Name <- as.factor(clean_data$Beach_Name)
   
-  # Logistic regression by year
-  model_year <- glm(
-    unsafe ~ Year,
+# ------------------------------------------
+# 10.1 Logistic Regression by Year
+# Test for an overall linear trend over time
+# ------------------------------------------
+  
+clean_data$Year_num <- as.numeric(as.character(clean_data$Year))
+  
+model_year_trend <- glm(
+    unsafe ~ Year_num,
     family = binomial,
     data = clean_data
   )
   
-  summary(model_year)
+# Display model summary
+summary(model_year_trend)
   
-  # Create season categories
-  clean_data <- clean_data %>%
-    mutate(
-      Season = case_when(
-        Month %in% c("May", "Jun") ~ "Early Summer",
-        Month %in% c("Jul", "Aug") ~ "Peak Summer",
-        Month %in% c("Sep") ~ "Late Summer",
-        TRUE ~ "Other"
+# Calculate odds ratio and 95% confidence interval
+year_results <- exp(cbind(
+    OR = coef(model_year_trend),
+    confint(model_year_trend)
+  ))
+  
+print(year_results)
+  
+# ------------------------------------------
+# 10.2 Create Seasonal Categories
+# ------------------------------------------
+  
+clean_data <- clean_data %>%
+   mutate(
+    Season = case_when(
+      Month %in% c("May", "Jun") ~ "Early Summer",
+      Month %in% c("Jul", "Aug") ~ "Peak Summer",
+      Month == "Sep" ~ "Late Summer",
+      TRUE ~ "Other"
       )
     )
   
-  clean_data$Season <- factor(
+clean_data$Season <- factor(
     clean_data$Season,
     levels = c(
       "Early Summer",
@@ -380,36 +421,51 @@ ggplot(clean_data, aes(x = Result_Measure)) +
     )
   )
   
-  # Logistic regression by season
-  model_season <- glm(
+# ------------------------------------------
+# 10.3 Logistic Regression by Season
+# ------------------------------------------
+  
+model_season <- glm(
     unsafe ~ Season,
     family = binomial,
     data = clean_data
   )
   
-  summary(model_season)
+# Display model summary
+summary(model_season)
   
-  # Logistic regression by beach
-  model_beach <- glm(
+# Calculate odds ratios and 95% confidence intervals
+season_results <- exp(cbind(
+    OR = coef(model_season),
+    confint(model_season)
+  ))
+  
+print(season_results)
+  
+# ------------------------------------------
+# 10.4 Logistic Regression by Beach
+# ------------------------------------------
+
+model_beach <- glm(
     unsafe ~ Beach_Name,
     family = binomial,
     data = clean_data
   )
   
-  summary(model_beach)
+# Display model summary
+summary(model_beach)
   
-  # Calculate odds ratios
-  exp(coef(model_year))
-  exp(coef(model_season))
-  exp(coef(model_beach))
+# Calculate odds ratios
+exp(coef(model_beach))
   
 # ==========================================
 # End of Analysis
 # ==========================================
 #
+#
 # This script completes the full analysis of recreational
 # water quality at New Jersey beaches using Enterococcus
-# monitoring data collected between 2021 and 2026.
+# monitoring data collected between 2021 and 2025.
 #
 # The workflow includes:
 #   - Importing and preparing the dataset
@@ -423,126 +479,9 @@ ggplot(clean_data, aes(x = Result_Measure)) +
 # accompanying manuscript were generated from this script.
 #
 # Independent research project by Elle Duffy
-# Summer 2026
+# May 2026-August 2026
 #
 # Repository:
 # https://github.com/elleduffy/nj-beach-water-quality-analysis-2021-2026-2
 #
 # End of script.
-
-  
- -------------------------
-    
-  
-  getwd()
-  list.files() 
-  list.files("Data")
-  data <- read.csv("Data/nj_beach_water_quality_2021_2026.csv")
-  names(data)
-  str(data)
-  head(data)
-  
-  data$Result_Measure <- as.numeric(data$Result_Measure)
-  
-  data$Result_Date <- as.Date(data$Result_Date, format = "%m/%d/%Y")
-  
-  data$Year <- as.numeric(format(data$Result_Date, "%Y"))
-  
-  data$Month <- as.numeric(format(data$Result_Date, "%m"))
-  
-  data$Unsafe <- ifelse(data$Result_Measure > 104, 1, 0)
-  
-  summary(data$Result_Measure)
-  table(data$Year)
-  table(data$Month)
-  table(data$Unsafe)
-  id="3c2t8k"
-  readLines("beach_water_quality_analysis.R")
-  grep(
-    "logistic|glm|season|unsafe|regression",
-    readLines("beach_water_quality_analysis.R"),
-    ignore.case = TRUE,
-    value = TRUE
-  )
-  summary(model_year)
-  summary(model_season)
-  summary(model_beach)
-  lines <- readLines("beach_water_quality_analysis.R")
-  
-  lines[grep("model_year|model_season|model_beach", lines)]
-  lines[which(grepl("model_year <- glm", lines)):which(grepl("exp\\(coef\\(model_beach\\)\\)", lines))]
-  clean_data <- data[!is.na(data$Result_Measure), ]
-  clean_data$unsafe <- clean_data$Result_Measure > 104
-  table(clean_data$unsafe)
-  names(clean_data)
-  table(clean_data$unsafe)
-  table(clean_data$Month)
-  
-  clean_data$Season <- dplyr::case_when(
-    clean_data$Month %in% c(5, 6) ~ "Early Summer",
-    clean_data$Month %in% c(7, 8) ~ "Peak Summer",
-    clean_data$Month == 9 ~ "Late Summer",
-    TRUE ~ "Other"
-  )
-  
-  clean_data$Season <- factor(
-    clean_data$Season,
-    levels = c("Early Summer", "Peak Summer", "Late Summer", "Other")
-  )
-  table(clean_data$Season)
-  table(clean_data$unsafe)
-  table(clean_data$Month)
-  table(clean_data$Season)
-  clean_data$Season <- droplevels(clean_data$Season)
-  levels(clean_data$Season)
-  
-  
-  
-  
-  model_year <- glm(
-    unsafe ~ Year,
-    family = binomial,
-    data = clean_data
-  )
-  
-  model_season <- glm(
-    unsafe ~ Season,
-    family = binomial,
-    data = clean_data
-  )
-  
-  model_beach <- glm(
-    unsafe ~ Beach_Name,
-    family = binomial,
-    data = clean_data
-  )
-  
-  
-  summary(model_year)
-  exp(coef(model_year))
-  exp(confint(model_year))
-  
-  
-  summary(model_season)
-  exp(coef(model_season))
-  exp(confint(model_season))
-  
-  
-  summary(model_beach)
-  exp(coef(model_beach))
-  exp(confint(model_beach))
-  
-  anova(model_beach, test = "Chisq")
-  
-  table(clean_data$Beach_Name)
-  table(clean_data$Beach_Name, clean_data$unsafe)
-  sort(table(clean_data$Beach_Name[clean_data$unsafe]), decreasing = TRUE)
-  
-  
-  
-  
-  list.files(recursive = TRUE)  
-  list.files("Desktop")
-  
-  list.files("Desktop/nj-beach-water-quality-analysis-2021-2026-2/Data")
-  

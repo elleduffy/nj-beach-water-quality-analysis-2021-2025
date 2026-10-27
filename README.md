@@ -1,69 +1,55 @@
-# Multi-Year Assessment of Recreational Water Quality at New Jersey Beaches (2021–2026)
+# Assessing Recreational Water Quality at New Jersey Beaches
 
 ## Overview
 
-This independent research project analyzes Enterococcus monitoring data collected from recreational beaches across New Jersey between 2021 and 2026.
-
-The goal of the project is to evaluate recreational water quality by evaluating Enterococcus concentration trends across time, season, and beach location, and identifying factors associated with unsafe water quality.
-
-This project was completed independently during Summer 2026 as a biostatistics portfolio project.
+An independent R-based analysis of Enterococcus monitoring measurements collected at recreational beaches in New Jersey. This project explores how measured concentrations and the percentage of samples above a selected threshold vary over time, by month, and across beaches.
 
 ---
 
 ## Research Questions
 
-- How safe was recreational water quality at New Jersey beaches between 2021 and 2026?
-- Did the percentage of unsafe water samples change over time?
-- Were some months associated with higher Enterococcus concentrations?
-- Did certain beaches experience unsafe conditions more frequently than others?
+- What does the distribution of measured Enterococcus concentrations look like?
+- Does the percentage of samples exceeding the selected threshold differ over time or by month?
+- Do monitored beaches differ in their observed exceedance rates?
+- How are sampling year, season, and beach associated with exceedance status in exploratory logistic-regression models?
 
 ---
 
-## Dataset
+## Data Source and Threshold
 
-New Jersey Department of Environmental Protection (NJDEP)
+The dataset is attributed to the New Jersey Department of Environmental Protection (NJDEP) and is provided in `Data/nj_beach_water_quality_2021_2026.csv`.
 
-The dataset contains routine Enterococcus monitoring measurements collected at public recreational beaches throughout New Jersey.
+The analysis script classifies a sample as exceeding the selected threshold when `Result_Measure > 104`. The NJDEP's Public Recreational Bathing page describes 104 colony-forming units of Enterococci per 100 mL as the maximum standard concentration for sampled marine waters; see the [official program page](https://www.nj.gov/health/ceohs/phfpp/prb/index.shtml).
 
 ---
 
-## Methods
+## Methods and Tools
 
-Analyses were conducted in RStudio using dplyr and ggplot2.
-
-The workflow included:
-
-- Data cleaning and preparation
-- Descriptive statistics
-- Annual trend analysis
-- Seasonal trend analysis
-- Beach comparisons
-- Data visualization
-- Statistical analysis
+- Language: R
+- Packages: `dplyr`, `ggplot2`, `patchwork`
+- Data import, date parsing, and measurement cleaning
+- Descriptive statistics and annual/monthly/beach-level summaries
+- Data visualization using `ggplot2`
+- Binomial logistic regression exploring the association between exceedance status and year, season, or beach
 
 ---
 
 ## Figures
 
-The project includes five primary figures:
+### Distribution of Enterococcus concentrations
+![Distribution of Enterococcus concentrations](Figures/enterococcus_distribution.png)
 
-1. Distribution of Enterococcus concentrations
-2. Enterococcus concentrations over time
-3. Annual percentage of unsafe samples
-4. Monthly percentage of unsafe samples
-5. Beaches with the highest percentage of unsafe samples
+### Enterococcus concentrations over time
+![Enterococcus concentrations over time](Figures/enterococcus_over_time.png)
 
----
+### Annual percentage of unsafe samples
+![Annual percentage of unsafe samples](Figures/yearly_unsafe_levels.png)
 
-## Skills Demonstrated
+### Monthly percentage of unsafe samples
+![Monthly percentage of unsafe samples](Figures/monthly_unsafe_levels.png)
 
-- Data cleaning
-- Data visualization
-- Statistical analysis
-- Logistic regression
-- Reproducible research
-- R programming
-- GitHub project organization
+### Beaches with the highest percentage of unsafe samples
+![Beaches with the highest percentage of unsafe samples](Figures/top_10_unsafe_beaches.png)
 
 ---
 
@@ -71,8 +57,6 @@ The project includes five primary figures:
 
 Elle Duffy
 
-Biochemistry Major
+Independent biostatistics portfolio project
 
-Statistics Minor
-
-Independent Summer Research Project (2026)
+GitHub Repository: [NJ Beach Water Quality Analysis](github.com/elleduffy/nj-beach-water-quality-analysis-2021-2025)
