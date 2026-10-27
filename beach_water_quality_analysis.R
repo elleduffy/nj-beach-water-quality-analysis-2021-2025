@@ -1,15 +1,15 @@
 ############################################################
 # Multi-Year Analysis of Recreational Water Quality at
-# New Jersey Beaches (2021–2026)
+# New Jersey Beaches (2021–2025)
 #
 # Author: Elle Duffy
-# Date: Summer 2026
+# Date: May 2026-August 2026
 # Version: 1.1
 #
 # Purpose:
 # Explore recreational water quality at New Jersey beaches
 # using Enterococcus monitoring data collected between
-# 2021 and 2026. This analysis examines overall water
+# 2021 and 2025. This analysis examines overall water
 # quality and identifies trends across time, season,
 # and beach location.
 ############################################################
@@ -26,7 +26,7 @@ library(ggplot2)
 # ==========================================
 
 # Read NJDEP beach water quality dataset
-beach_data <- read.csv("Data/nj_beach_water_quality_2021_2026.csv")
+beach_data <- read.csv("Data/nj_beach_water_quality_2021_2025.csv")
 
 # Verify successful data import
 head(beach_data)
@@ -407,7 +407,7 @@ ggplot(clean_data, aes(x = Result_Measure)) +
 #
 # This script completes the full analysis of recreational
 # water quality at New Jersey beaches using Enterococcus
-# monitoring data collected between 2021 and 2026.
+# monitoring data collected between 2021 and 2025.
 #
 # The workflow includes:
 #   - Importing and preparing the dataset
@@ -421,7 +421,7 @@ ggplot(clean_data, aes(x = Result_Measure)) +
 # accompanying manuscript were generated from this script.
 #
 # Independent research project by Elle Duffy
-# Summer 2026
+# May 2026-August 2026
 #
 # Repository:
 # https://github.com/elleduffy/nj-beach-water-quality-analysis-2021-2026-2
