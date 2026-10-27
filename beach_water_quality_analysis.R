@@ -1,6 +1,6 @@
 ############################################################
 # Multi-Year Analysis of Recreational Water Quality at
-# New Jersey Beaches (2021–2026)
+# New Jersey Beaches (2021–2025)
 #
 # Author: Elle Duffy
 # Date: Summer 2026
@@ -9,7 +9,7 @@
 # Purpose:
 # Explore recreational water quality at New Jersey beaches
 # using Enterococcus monitoring data collected between
-# 2021 and 2026. This analysis examines overall water
+# 2021 and 2025. This analysis examines overall water
 # quality and identifies trends across time, season,
 # and beach location.
 ############################################################
@@ -27,6 +27,8 @@ library(ggplot2)
 
 # Read NJDEP beach water quality dataset
 beach_data <- read.csv("Data/nj_beach_water_quality_2021_2026.csv")
+
+setwd("/Users/elleduffy/Desktop/nj-beach-water-quality-analysis-2021-2026-2")
 
 # Verify successful data import
 head(beach_data)
@@ -427,3 +429,120 @@ ggplot(clean_data, aes(x = Result_Measure)) +
 # https://github.com/elleduffy/nj-beach-water-quality-analysis-2021-2026-2
 #
 # End of script.
+
+  
+ -------------------------
+    
+  
+  getwd()
+  list.files() 
+  list.files("Data")
+  data <- read.csv("Data/nj_beach_water_quality_2021_2026.csv")
+  names(data)
+  str(data)
+  head(data)
+  
+  data$Result_Measure <- as.numeric(data$Result_Measure)
+  
+  data$Result_Date <- as.Date(data$Result_Date, format = "%m/%d/%Y")
+  
+  data$Year <- as.numeric(format(data$Result_Date, "%Y"))
+  
+  data$Month <- as.numeric(format(data$Result_Date, "%m"))
+  
+  data$Unsafe <- ifelse(data$Result_Measure > 104, 1, 0)
+  
+  summary(data$Result_Measure)
+  table(data$Year)
+  table(data$Month)
+  table(data$Unsafe)
+  id="3c2t8k"
+  readLines("beach_water_quality_analysis.R")
+  grep(
+    "logistic|glm|season|unsafe|regression",
+    readLines("beach_water_quality_analysis.R"),
+    ignore.case = TRUE,
+    value = TRUE
+  )
+  summary(model_year)
+  summary(model_season)
+  summary(model_beach)
+  lines <- readLines("beach_water_quality_analysis.R")
+  
+  lines[grep("model_year|model_season|model_beach", lines)]
+  lines[which(grepl("model_year <- glm", lines)):which(grepl("exp\\(coef\\(model_beach\\)\\)", lines))]
+  clean_data <- data[!is.na(data$Result_Measure), ]
+  clean_data$unsafe <- clean_data$Result_Measure > 104
+  table(clean_data$unsafe)
+  names(clean_data)
+  table(clean_data$unsafe)
+  table(clean_data$Month)
+  
+  clean_data$Season <- dplyr::case_when(
+    clean_data$Month %in% c(5, 6) ~ "Early Summer",
+    clean_data$Month %in% c(7, 8) ~ "Peak Summer",
+    clean_data$Month == 9 ~ "Late Summer",
+    TRUE ~ "Other"
+  )
+  
+  clean_data$Season <- factor(
+    clean_data$Season,
+    levels = c("Early Summer", "Peak Summer", "Late Summer", "Other")
+  )
+  table(clean_data$Season)
+  table(clean_data$unsafe)
+  table(clean_data$Month)
+  table(clean_data$Season)
+  clean_data$Season <- droplevels(clean_data$Season)
+  levels(clean_data$Season)
+  
+  
+  
+  
+  model_year <- glm(
+    unsafe ~ Year,
+    family = binomial,
+    data = clean_data
+  )
+  
+  model_season <- glm(
+    unsafe ~ Season,
+    family = binomial,
+    data = clean_data
+  )
+  
+  model_beach <- glm(
+    unsafe ~ Beach_Name,
+    family = binomial,
+    data = clean_data
+  )
+  
+  
+  summary(model_year)
+  exp(coef(model_year))
+  exp(confint(model_year))
+  
+  
+  summary(model_season)
+  exp(coef(model_season))
+  exp(confint(model_season))
+  
+  
+  summary(model_beach)
+  exp(coef(model_beach))
+  exp(confint(model_beach))
+  
+  anova(model_beach, test = "Chisq")
+  
+  table(clean_data$Beach_Name)
+  table(clean_data$Beach_Name, clean_data$unsafe)
+  sort(table(clean_data$Beach_Name[clean_data$unsafe]), decreasing = TRUE)
+  
+  
+  
+  
+  list.files(recursive = TRUE)  
+  list.files("Desktop")
+  
+  list.files("Desktop/nj-beach-water-quality-analysis-2021-2026-2/Data")
+  
