@@ -17,7 +17,7 @@ An independent R-based analysis of Enterococcus monitoring measurements collecte
 
 ## Data Source and Threshold
 
-The dataset is attributed to the New Jersey Department of Environmental Protection (NJDEP) and is provided in `Data/nj_beach_water_quality_2021_2026.csv`.
+The dataset is attributed to the New Jersey Department of Environmental Protection (NJDEP) and is provided in `Data/nj_beach_water_quality_2021_2025.csv`.
 
 The analysis script classifies a sample as exceeding the selected threshold when `Result_Measure > 104`. The NJDEP's Public Recreational Bathing page describes 104 colony-forming units of Enterococci per 100 mL as the maximum standard concentration for sampled marine waters; see the [official program page](https://www.nj.gov/health/ceohs/phfpp/prb/index.shtml).
 
@@ -53,10 +53,16 @@ The analysis script classifies a sample as exceeding the selected threshold when
 
 ---
 
+## Manuscript
+
+[NJ Beach Water Quality Analysis Manuscript](Manuscript/beach_water_quality_manuscript.pdf)
+
+---
+
 ## Author
 
 Elle Duffy
 
 Independent biostatistics portfolio project
 
-GitHub Repository: [NJ Beach Water Quality Analysis](github.com/elleduffy/nj-beach-water-quality-analysis-2021-2025)
+GitHub Repository: [NJ Beach Water Quality Analysis Repository](https://github.com/elleduffy/nj-beach-water-quality-analysis-2021-2025)
