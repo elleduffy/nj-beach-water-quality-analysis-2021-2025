@@ -26,7 +26,7 @@ The analysis script classifies a sample as exceeding the selected threshold when
 ## Methods and Tools
 
 - Language: R
-- Packages: `dplyr`, `ggplot2`
+- Packages: `dplyr`, `ggplot2`, `patchwork`
 - Data import, date parsing, and measurement cleaning
 - Descriptive statistics and annual/monthly/beach-level summaries
 - Data visualization using `ggplot2`
