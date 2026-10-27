@@ -386,7 +386,15 @@ ggplot(clean_data, aes(x = Result_Measure)) +
   )
   
   summary(model_season)
-  
+
+  # Calculate odds ratios and 95% confidence intervals
+season_results <- exp(cbind(
+  OR = coef(model_season),
+  confint(model_season)
+))
+
+print(season_results)
+
   # Logistic regression by beach
   model_beach <- glm(
     unsafe ~ Beach_Name,
