@@ -46,10 +46,10 @@ The analysis script classifies a sample as exceeding the selected threshold when
 ![Annual percentage of unsafe samples](Figures/yearly_unsafe_levels.png)
 
 ### Monthly percentage of unsafe samples
-[Monthly percentage of unsafe samples](Figures/monthly_unsafe_levels.png)
+![Monthly percentage of unsafe samples](Figures/monthly_unsafe_levels.png)
 
 ### Beaches with the highest percentage of unsafe samples
-[Beaches with the highest percentage of unsafe samples](Figures/top_10_unsafe_beaches.png)
+![Beaches with the highest percentage of unsafe samples](Figures/top_10_unsafe_beaches.png)
 
 ---
 
@@ -59,4 +59,4 @@ Elle Duffy
 
 Independent biostatistics portfolio project
 
-Repository: github.com/elleduffy/nj-beach-water-quality-analysis-2021-2025
+GitHub Repository: [NJ Beach Water Quality Analysis](github.com/elleduffy/nj-beach-water-quality-analysis-2021-2025)
